@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كادو - الحسابات اليومية</title>
+<style>
+  body { font-family: 'Cairo', sans-serif; padding:20px; background:#f9f9f9; color:#004d40; }
+  h1 { text-align:center; color:#008080; }
+  table { width:100%; border-collapse: collapse; margin-top:20px; }
+  th, td { border:1px solid #004d40; padding:8px; text-align:center; }
+  th { background:#008080; color:white; }
+  button { padding:8px 12px; border:none; border-radius:5px; background:#25D366; color:white; cursor:pointer; margin-top:15px; }
+</style>
+</head>
+<body>
+
+<h1>كادو - الحسابات اليومية</h1>
+
+<!-- جدول العمليات -->
+<table id="operationsTable">
+  <thead>
+    <tr>
+      <th>التاريخ</th>
+      <th>المستخدم</th>
+      <th>العملية</th>
+      <th>المنتج/البند</th>
+      <th>الكمية</th>
+      <th>السعر</th>
+      <th>المجموع</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- سيتم ملء البيانات بواسطة JS -->
+  </tbody>
+</table>
+
+<!-- زر التقرير اليومي -->
+<button onclick="sendDailyReport()">إرسال التقرير اليومي عبر WhatsApp</button>
+
+<script>
+  // --- مثال بيانات أولية ---
+  const currentUser = 'حسان'; // المستخدم الحالي
+  const operations = [
+    { date: '2025-10-02', user:'حسان', type:'بيع', item:'كعك', quantity:10, price:5000 },
+    { date: '2025-10-02', user:'شريك', type:'شراء مواد', item:'طحين', quantity:2, price:2000 },
+    { date: '2025-10-02', user:'حسان', type:'صرف', item:'غاز', quantity:1, price:1000 },
+  ];
+
+  // --- عرض البيانات في الجدول ---
+  const tbody = document.querySelector('#operationsTable tbody');
+  operations.forEach(op=>{
+    const sum = op.quantity*op.price;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${op.date}</td><td>${op.user}</td><td>${op.type}</td><td>${op.item}</td><td>${op.quantity}</td><td>${op.price}</td><td>${sum}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // --- دالة إرسال التقرير اليومي عبر WhatsApp ---
+  function sendDailyReport(){
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    let message = `📋 تقرير يوم ${todayStr}\n\n`;
+    const todayOps = operations.filter(op => op.date === todayStr);
+    if(todayOps.length===0){ alert('لا توجد عمليات اليوم'); return; }
+    let totalSell=0,totalBuy=0,totalExpense=0;
+    todayOps.forEach(op=>{
+      const sum = op.quantity*op.price;
+      message += `- ${op.type} | ${op.item} x ${op.quantity} = ${sum} د.ع | بواسطة: ${op.user}\n`;
+      if(op.type==='بيع') totalSell+=sum;
+      else if(op.type==='شراء مواد') totalBuy+=sum;
+      else if(op.type==='صرف') totalExpense+=sum;
+    });
+    const netProfit = totalSell-(totalBuy+totalExpense);
+    message += `\nإجمالي المبيعات: ${totalSell} د.ع\nإجمالي شراء المواد: ${totalBuy} د.ع\nإجمالي المصروفات: ${totalExpense} د.ع\nصافي الربح: ${netProfit} د.ع`;
+    
+    // رقمك لإرسال التقرير
+    const phone = '9647702684155';
+    const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(waLink,'_blank');
+  }
+</script>
+
+</body>
+</html>
